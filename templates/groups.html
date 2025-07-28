@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Groups</h2>
+
+  <form method="post" action="{{ url_for('add_group') }}">
+    <input type="text" name="name" placeholder="New group name" required>
+    <button>
+      <span class="material-icons">add</span> Add Group
+    </button>
+  </form>
+
+  <ul>
+    {% for g in groups %}
+      <li>
+        <form method="post"
+              action="{{ url_for('edit_group', group_id=g.id) }}"
+              style="display:inline;">
+          <input type="text" name="name" value="{{ g.name }}" required>
+          <button title="Rename">
+            <span class="material-icons">edit</span>
+          </button>
+        </form>
+        <form method="post"
+              action="{{ url_for('delete_group', group_id=g.id) }}"
+              style="display:inline;">
+          <button title="Delete">
+            <span class="material-icons">delete</span>
+          </button>
+        </form>
+      </li>
+    {% else %}
+      <li><em>No groups yet.</em></li>
+    {% endfor %}
+  </ul>
+{% endblock %}

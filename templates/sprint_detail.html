@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="sprint-detail" data-sprint-id="{{ sprint.id }}">
+  <h2>{{ sprint.name }}</h2>
+
+  <form class="add-project-form"
+        method="post"
+        action="{{ url_for('add_project', sprint_id=sprint.id) }}">
+    <input type="text" name="name" placeholder="New project name" required>
+    <button>
+      <span class="material-icons">folder_open</span> Add Project
+    </button>
+  </form>
+
+  <div class="detail-wrap">
+    <!-- FILTER PANEL -->
+    <div class="filter-panel">
+      <h4>Filter by Type</h4>
+      <div class="filter-group types">
+        {% for t in filter_types %}
+          <label>
+            <input type="checkbox" class="filter-type" value="{{ t.id }}">
+            {{ t.name }}
+          </label>
+        {% endfor %}
+      </div>
+      <h4>Filter by Group</h4>
+      <div class="filter-group groups">
+        {% for g in filter_groups %}
+          <label>
+            <input type="checkbox" class="filter-group" value="{{ g.id }}">
+            {{ g.name }}
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- AVAILABLE RESOURCES -->
+    <div class="resource-panel">
+      <h3>Available Resources</h3>
+      <ul id="resource-pool">
+        {% if available_resources %}
+          {% for r in available_resources %}
+            <li class="draggable-resource"
+                draggable="true"
+                data-id="{{ r.id }}"
+                data-capacity="100"
+                data-type-id="{{ r.type.id if r.type }}"
+                data-group-id="{{ r.group.id if r.group }}">
+              <strong>{{ r.name }}</strong>
+              {% if r.type or r.group %}
+                <div class="resource-meta">
+                  {% if r.type %}<span class="meta-type">{{ r.type.name }}</span>{% endif %}
+                  {% if r.group %}<span class="meta-group">{{ r.group.name }}</span>{% endif %}
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        {% else %}
+          <li><em>None left to assign.</em></li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <!-- PROJECTS STRIP -->
+    <div class="projects-container">
+      {% for proj in sprint.projects %}
+        <div class="project-dropzone" data-project-id="{{ proj.id }}">
+          <h4>
+            {{ proj.name }}
+            <form method="post"
+                  action="{{ url_for('edit_project',
+                                      sprint_id=sprint.id,
+                                      proj_id=proj.id) }}"
+                  class="inline-form">
+              <input name="name" value="{{ proj.name }}" required>
+              <button title="Rename">
+                <span class="material-icons">edit</span>
+              </button>
+            </form>
+            <form method="post"
+                  action="{{ url_for('delete_project',
+                                      sprint_id=sprint.id,
+                                      proj_id=proj.id) }}"
+                  class="inline-form">
+              <button title="Delete">
+                <span class="material-icons">delete</span>
+              </button>
+            </form>
+          </h4>
+
+          <ul>
+            {% if proj.assignments %}
+              {% for a in proj.assignments %}
+                <li>
+                  <strong>{{ a.resource.name }}</strong>
+                  {% if a.resource.type or a.resource.group %}
+                    <div class="resource-meta">
+                      {% if a.resource.type %}<span class="meta-type">{{ a.resource.type.name }}</span>{% endif %}
+                      {% if a.resource.group %}<span class="meta-group">{{ a.resource.group.name }}</span>{% endif %}
+                    </div>
+                  {% endif %}
+                  ({{ a.capacity }}%)
+                  <button class="unassign-btn"
+                          data-resource-id="{{ a.resource.id }}">
+                    <span class="material-icons">close</span>
+                  </button>
+                </li>
+              {% endfor %}
+            {% else %}
+              <li><em>No resources assigned.</em></li>
+            {% endif %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

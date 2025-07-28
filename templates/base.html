@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Capacity Planner</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    button { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Capacity Planner</h1>
+  <nav style="margin-bottom:1rem;">
+    <a href="{{ url_for('list_sprints') }}">Sprints</a> |
+    <a href="{{ url_for('list_resources') }}">Resources</a> |
+    <a href="{{ url_for('list_types') }}">Types</a> |
+    <a href="{{ url_for('list_groups') }}">Groups</a>
+  </nav>
+  {% block content %}{% endblock %}
+</body>
+</html>

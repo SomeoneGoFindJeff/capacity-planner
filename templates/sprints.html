@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Sprints</h2>
+
+  <form method="post" action="{{ url_for('add_sprint') }}">
+    <input name="name" placeholder="New sprint name" required>
+    <button><span class="material-icons">add</span> Add</button>
+  </form>
+
+  <ul>
+    {% for sprint in sprints %}
+      <li>
+        {{ sprint.name }}
+
+        <!-- Copy -->
+        <form method="post"
+              action="{{ url_for('copy_sprint', source_id=sprint.id) }}"
+              style="display:inline;">
+          <button title="Copy">
+            <span class="material-icons">content_copy</span>
+          </button>
+        </form>
+
+        <!-- Delete -->
+        <form method="post"
+              action="{{ url_for('delete_sprint', sprint_id=sprint.id) }}"
+              style="display:inline;">
+          <button title="Delete">
+            <span class="material-icons">delete</span>
+          </button>
+        </form>
+
+        <!-- View -->
+        <a href="{{ url_for('view_sprint', sprint_id=sprint.id) }}" title="View">
+          <span class="material-icons">open_in_new</span>
+        </a>
+      </li>
+    {% else %}
+      <li><em>No sprints yet.</em></li>
+    {% endfor %}
+  </ul>
+{% endblock %}
