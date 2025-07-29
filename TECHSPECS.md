@@ -1,6 +1,5 @@
 
 ```markdown
-<!-- TECHSPECS.md -->
 
 # TECHSPECS: Capacity Planner
 
