@@ -36,23 +36,12 @@
       </div>
     </div>
 
-  <!-- Available Resources panel -->
+    <!-- Available Resources panel -->
   <div class="resource-panel">
     <h3>Available Resources</h3>
     <ul id="resource-pool">
-      {# Track whether we actually printed any slots #}
-      {% set shown = false %}
-
-      {% for r in all_resources %}
-        {# compute how much capacity remains for this resource #}
-        {% set used = sprint.assignments
-                         | selectattr('resource_id','equalto',r.id)
-                         | map(attribute='capacity')
-                         | sum %}
-        {% set avail = 100 - used %}
-
-        {% if avail > 0 %}
-          {% set shown = true %}
+      {% if avail_resources %}
+        {% for r, avail in avail_resources %}
           <li class="draggable-resource"
               draggable="true"
               data-id="{{ r.id }}"
@@ -68,15 +57,13 @@
             {% endif %}
             <div class="capacity-label">{{ avail }}%</div>
           </li>
-        {% endif %}
-      {% endfor %}
-
-      {# only show this if NOTHING was printed above #}
-      {% if not shown %}
+        {% endfor %}
+      {% else %}
         <li><em>None left to assign.</em></li>
       {% endif %}
     </ul>
   </div>
+
 
 
     <!-- PROJECTS STRIP -->

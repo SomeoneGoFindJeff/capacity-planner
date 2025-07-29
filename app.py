@@ -93,21 +93,32 @@ def copy_sprint(source_id):
     return redirect(url_for('view_sprint', sprint_id=new_sprint.id))
 
 # ─── Sprint Detail ───
+# ─── Sprint Detail ───
 @app.route('/sprints/<int:sprint_id>')
 def view_sprint(sprint_id):
-    sprint       = Sprint.query.get_or_404(sprint_id)
-    # pass all resources; template will compute available capacity
-    all_resources = Resource.query.order_by(Resource.name).all()
+    sprint = Sprint.query.get_or_404(sprint_id)
 
-    # still collect types/groups for filters
+    # Gather all resources and compute remaining capacity
+    avail_resources = []
+    all_resources = Resource.query.order_by(Resource.name).all()
+    for r in all_resources:
+        used = sum(a.capacity for a in sprint.assignments if a.resource_id == r.id)
+        remaining = 100 - used
+        if remaining > 0:
+            avail_resources.append((r, remaining))
+
+    # Fetch types & groups for filters
     types  = ResourceType.query.order_by(ResourceType.name).all()
     groups = ResourceGroup.query.order_by(ResourceGroup.name).all()
 
-    return render_template('sprint_detail.html',
-                           sprint=sprint,
-                           all_resources=all_resources,
-                           filter_types=types,
-                           filter_groups=groups)
+    return render_template(
+        'sprint_detail.html',
+        sprint=sprint,
+        avail_resources=avail_resources,
+        filter_types=types,
+        filter_groups=groups
+    )
+
 
 
 # ─── Project CRUD ───
