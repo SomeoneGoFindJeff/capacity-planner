@@ -36,42 +36,48 @@
       </div>
     </div>
 
-    <!-- AVAILABLE RESOURCES -->
-    <div class="resource-panel">
-      <h3>Available Resources</h3>
-      <ul id="resource-pool">
-        {% set shown = false %}
-        {% for r in all_resources %}
-          {# sum of capacities already assigned for this sprint & resource #}
-          {% set assigned = sprint.assignments
-                              | selectattr('resource_id','equalto',r.id)
-                              | map(attribute='capacity')
-                              | sum %}
-          {% set avail = 100 - assigned %}
-          {% if avail > 0 %}
-            {% set shown = true %}
-            <li class="draggable-resource"
-                draggable="true"
-                data-id="{{ r.id }}"
-                data-capacity="{{ avail }}"
-                data-type-id="{{ r.type.id if r.type }}"
-                data-group-id="{{ r.group.id if r.group }}">
-              <strong>{{ r.name }}</strong>
-              {% if r.type or r.group %}
-                <div class="resource-meta">
-                  {% if r.type %}<span class="meta-type">{{ r.type.name }}</span>{% endif %}
-                  {% if r.group %}<span class="meta-group">{{ r.group.name }}</span>{% endif %}
-                </div>
-              {% endif %}
-              <div class="capacity-label">{{ avail }}%</div>
-            </li>
-          {% endif %}
-        {% endfor %}
-        {% if not shown %}
-          <li><em>None left to assign.</em></li>
+  <!-- Available Resources panel -->
+  <div class="resource-panel">
+    <h3>Available Resources</h3>
+    <ul id="resource-pool">
+      {# Track whether we actually printed any slots #}
+      {% set shown = false %}
+
+      {% for r in all_resources %}
+        {# compute how much capacity remains for this resource #}
+        {% set used = sprint.assignments
+                         | selectattr('resource_id','equalto',r.id)
+                         | map(attribute='capacity')
+                         | sum %}
+        {% set avail = 100 - used %}
+
+        {% if avail > 0 %}
+          {% set shown = true %}
+          <li class="draggable-resource"
+              draggable="true"
+              data-id="{{ r.id }}"
+              data-capacity="{{ avail }}"
+              data-type-id="{{ r.type.id if r.type }}"
+              data-group-id="{{ r.group.id if r.group }}">
+            <strong>{{ r.name }}</strong>
+            {% if r.type or r.group %}
+              <div class="resource-meta">
+                {% if r.type %}<span class="meta-type">{{ r.type.name }}</span>{% endif %}
+                {% if r.group %}<span class="meta-group">{{ r.group.name }}</span>{% endif %}
+              </div>
+            {% endif %}
+            <div class="capacity-label">{{ avail }}%</div>
+          </li>
         {% endif %}
-      </ul>
-    </div>
+      {% endfor %}
+
+      {# only show this if NOTHING was printed above #}
+      {% if not shown %}
+        <li><em>None left to assign.</em></li>
+      {% endif %}
+    </ul>
+  </div>
+
 
     <!-- PROJECTS STRIP -->
     <div class="projects-container">
