@@ -74,6 +74,7 @@ This Technical Specification (“TECHSPECS”) serves as a comprehensive referen
 ---
 
 ## 4. Directory Layout
+```
 
 ```csharp
 /capacity-planner
