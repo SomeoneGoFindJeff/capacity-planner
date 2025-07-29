@@ -3,6 +3,7 @@
 <div class="sprint-detail" data-sprint-id="{{ sprint.id }}">
   <h2>{{ sprint.name }}</h2>
 
+  <!-- Add Project form -->
   <form class="add-project-form"
         method="post"
         action="{{ url_for('add_project', sprint_id=sprint.id) }}">
@@ -39,12 +40,20 @@
     <div class="resource-panel">
       <h3>Available Resources</h3>
       <ul id="resource-pool">
-        {% if available_resources %}
-          {% for r in available_resources %}
+        {% set shown = false %}
+        {% for r in all_resources %}
+          {# sum of capacities already assigned for this sprint & resource #}
+          {% set assigned = sprint.assignments
+                              | selectattr('resource_id','equalto',r.id)
+                              | map(attribute='capacity')
+                              | sum %}
+          {% set avail = 100 - assigned %}
+          {% if avail > 0 %}
+            {% set shown = true %}
             <li class="draggable-resource"
                 draggable="true"
                 data-id="{{ r.id }}"
-                data-capacity="100"
+                data-capacity="{{ avail }}"
                 data-type-id="{{ r.type.id if r.type }}"
                 data-group-id="{{ r.group.id if r.group }}">
               <strong>{{ r.name }}</strong>
@@ -54,9 +63,11 @@
                   {% if r.group %}<span class="meta-group">{{ r.group.name }}</span>{% endif %}
                 </div>
               {% endif %}
+              <div class="capacity-label">{{ avail }}%</div>
             </li>
-          {% endfor %}
-        {% else %}
+          {% endif %}
+        {% endfor %}
+        {% if not shown %}
           <li><em>None left to assign.</em></li>
         {% endif %}
       </ul>

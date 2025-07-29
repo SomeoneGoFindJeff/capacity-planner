@@ -96,15 +96,19 @@ def copy_sprint(source_id):
 @app.route('/sprints/<int:sprint_id>')
 def view_sprint(sprint_id):
     sprint       = Sprint.query.get_or_404(sprint_id)
-    assigned_ids = [a.resource_id for a in sprint.assignments]
-    available    = Resource.query.filter(Resource.id.notin_(assigned_ids)) \
-                                  .order_by(Resource.name).all()
-    # Pass filter data as before...
+    # pass all resources; template will compute available capacity
+    all_resources = Resource.query.order_by(Resource.name).all()
+
+    # still collect types/groups for filters
+    types  = ResourceType.query.order_by(ResourceType.name).all()
+    groups = ResourceGroup.query.order_by(ResourceGroup.name).all()
+
     return render_template('sprint_detail.html',
                            sprint=sprint,
-                           available_resources=available,
-                           filter_types=ResourceType.query.order_by(ResourceType.name).all(),
-                           filter_groups=ResourceGroup.query.order_by(ResourceGroup.name).all())
+                           all_resources=all_resources,
+                           filter_types=types,
+                           filter_groups=groups)
+
 
 # ─── Project CRUD ───
 @app.route('/sprints/<int:sprint_id>/projects', methods=['POST'])
