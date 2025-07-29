@@ -1,5 +1,3 @@
-```markdown
-
 # TECHSPECS: Capacity Planner
 
 **Purpose of This Document**  
