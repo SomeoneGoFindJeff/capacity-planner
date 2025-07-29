@@ -1,15 +1,19 @@
+// static/app.js
 document.addEventListener('DOMContentLoaded', () => {
-  // ─── Helper to wire up each resource item ───
+  // ─── Helper: make a resource draggable & splittable ───
   function setupResource(el) {
     el.addEventListener('dragstart', ev => {
       ev.dataTransfer.setData('text/plain', el.dataset.id);
       ev.dataTransfer.setData('application/capacity', el.dataset.capacity);
     });
+
     el.addEventListener('contextmenu', ev => {
       ev.preventDefault();
-      const baseName = ev.target.textContent.replace(/\s*\(\d+%\)$/, '');
+      const li = el;
+      const originalHTML = li.innerHTML;
+      const baseName = li.querySelector('strong')?.textContent || '';
       const input = prompt(
-        `Split capacity for "${baseName.trim()}" as A/B (sum to 100):`,
+        `Split capacity for "${baseName}" as A/B (sum to 100):`,
         '50/50'
       );
       if (!input) return;
@@ -19,25 +23,28 @@ document.addEventListener('DOMContentLoaded', () => {
         parts.some(isNaN) ||
         parts[0] + parts[1] !== 100
       ) {
-        alert('Enter two numbers that sum to 100, e.g. 30/70.');
+        alert('Enter two numbers that sum to 100 (e.g. 30/70).');
         return;
       }
-      const container = ev.target.parentElement;
-      ev.target.remove();
+      const parent = li.parentElement;
+      li.remove();  // remove the original slot
       parts.forEach(cap => {
-        const li = document.createElement('li');
-        li.className = 'draggable-resource';
-        li.draggable = true;
-        li.dataset.id = el.dataset.id;
-        li.dataset.capacity = cap;
-        li.textContent = `${baseName.trim()} (${cap}%)`;
-        container.appendChild(li);
-        setupResource(li);
+        const newLi = document.createElement('li');
+        newLi.className = 'draggable-resource';
+        newLi.draggable = true;
+        newLi.dataset.id       = el.dataset.id;
+        newLi.dataset.capacity = cap;
+        if (el.dataset.typeId)  newLi.dataset.typeId  = el.dataset.typeId;
+        if (el.dataset.groupId) newLi.dataset.groupId = el.dataset.groupId;
+        // reuse the inner HTML but swap out the capacity
+        newLi.innerHTML = originalHTML.replace(/\d+%/, `${cap}%`);
+        parent.appendChild(newLi);
+        setupResource(newLi);
       });
     });
   }
 
-  // ─── Wire up all available resources for drag/split ───
+  // initialize all pool items
   document.querySelectorAll('.draggable-resource').forEach(el => {
     if (!el.dataset.capacity) el.dataset.capacity = '100';
     setupResource(el);
@@ -62,12 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await fetch('/assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sprint_id: sprintId,
-          project_id: projId,
-          resource_id: resId,
-          capacity: capacity
-        })
+        body: JSON.stringify({ sprint_id: sprintId, project_id: projId, resource_id: resId, capacity })
       });
       window.location.reload();
     });
@@ -76,14 +78,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── Unassign buttons ───
   document.querySelectorAll('.unassign-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const projZone = btn.closest('.project-dropzone');
-      const sprintId = projZone.closest('[data-sprint-id]').dataset.sprintId;
+      const zone     = btn.closest('.project-dropzone');
+      const sprintId = zone.closest('[data-sprint-id]').dataset.sprintId;
       await fetch('/unassign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sprint_id: sprintId,
-          project_id: projZone.dataset.projectId,
+          project_id: zone.dataset.projectId,
           resource_id: btn.dataset.resourceId
         })
       });
@@ -92,26 +94,20 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ─── FILTERING LOGIC ───
-  // select only the checkbox inputs, not the container divs
   const typeCheckboxes  = Array.from(document.querySelectorAll('input.filter-type'));
   const groupCheckboxes = Array.from(document.querySelectorAll('input.filter-group'));
 
   function filterResources() {
-    const selectedTypes  = typeCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
-    const selectedGroups = groupCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
-
+    const selTypes  = typeCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
+    const selGroups = groupCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
     document.querySelectorAll('#resource-pool .draggable-resource').forEach(li => {
-      const t = li.dataset.typeId;
-      const g = li.dataset.groupId;
-      const okType  = !selectedTypes.length  || (t && selectedTypes.includes(t));
-      const okGroup = !selectedGroups.length || (g && selectedGroups.includes(g));
-      li.style.display = (okType && okGroup) ? '' : 'none';
+      const tOK = !selTypes.length  || (li.dataset.typeId  && selTypes.includes(li.dataset.typeId));
+      const gOK = !selGroups.length || (li.dataset.groupId && selGroups.includes(li.dataset.groupId));
+      li.style.display = (tOK && gOK) ? '' : 'none';
     });
   }
 
   typeCheckboxes.forEach(cb => cb.addEventListener('change', filterResources));
   groupCheckboxes.forEach(cb => cb.addEventListener('change', filterResources));
-
-  // initial filter pass
   filterResources();
 });
