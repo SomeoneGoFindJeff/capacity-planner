@@ -56,13 +56,18 @@ pip install -r requirements.txt
 ## 🔍 Usage
 URL	Description
 - **Project Management**
-  - sprints	List
-  - add, delete, and copy Sprints
-  - view Sprint detail & assign Resources
+  - /sprint:
+    - sprints	List
+  - /sprints/<id>
+    - add, delete, and copy Sprints
+    - view Sprint detail & assign Resources
 - **Configure**
-  - resources	Manage Resources (Name, Type, Group)
-  - types	CRUD Resource Types (e.g., Backend, Frontend)
-  - groups	CRUD Resource Groups (e.g., Onshore, Offshore)
+  - /resources
+    - Manage Resources (Name, Type, Group)
+  - /types
+    - CRUD Resource Types (e.g., Backend, Frontend)
+  - /groups
+    - CRUD Resource Groups (e.g., Onshore, Offshore)
 
 Key workflows—split-capacity, drag/drop, and multi-filters—live on the Sprint detail page.
 
