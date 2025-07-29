@@ -77,6 +77,7 @@ https://capacity-planner.onrender.com/sprints
 Push to main on GitHub and Render auto-deploys the latest version.
 
 ## 📂 Directory Structure
+```csharp
 capacity-planner/
 ├── app.py
 ├── requirements.txt
@@ -92,6 +93,7 @@ capacity-planner/
 └── static/
     ├── style.css
     └── app.js
+```
 
 👤 Maintainer
 jeromeaedrew
