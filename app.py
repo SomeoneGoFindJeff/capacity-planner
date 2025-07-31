@@ -287,6 +287,16 @@ def delete_resource(resource_id):
     app.logger.info(f"Deleted Resource(id={resource_id})")
     return redirect(url_for('list_resources'))
 
+@app.route('/resources/edit/<int:resource_id>', methods=['POST'])
+def edit_resource(resource_id):
+    new_name = request.form.get('name')
+    r = Resource.query.get_or_404(resource_id)
+    if new_name:
+        r.name = new_name
+        db.session.commit()
+        app.logger.info(f"Renamed Resource(id={resource_id}) to '{new_name}'")
+    return redirect(url_for('list_resources'))
+
 # ─── App Runner ──────────────────────────────────────────────────────────
 if __name__ == '__main__':
     with app.app_context():
