@@ -135,6 +135,14 @@ def add_sprint():
     app.logger.info(f"Added Sprint(id={sprint.id})")
     return redirect(url_for('list_sprints'))
 
+@app.route('/sprints/delete/<int:sprint_id>', methods=['POST'])
+def delete_sprint(sprint_id):
+    sprint = Sprint.query.get_or_404(sprint_id)
+    db.session.delete(sprint)
+    db.session.commit()
+    app.logger.info(f"Deleted Sprint(id={sprint_id})")
+    return redirect(url_for('list_sprints'))
+
 @app.route('/sprints/<int:sprint_id>')
 def view_sprint(sprint_id):
     sprint = Sprint.query.get_or_404(sprint_id)
