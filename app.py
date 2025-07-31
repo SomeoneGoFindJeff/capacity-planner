@@ -32,9 +32,19 @@ dictConfig({
 
 # ─── App & DB Setup ───────────────────────────────────────────────────────
 app = Flask(__name__, instance_relative_config=True)
+
+# ensure the instance folder exists (for local SQLite)
+os.makedirs(app.instance_path, exist_ok=True)
+
+# load any runtime config
 app.config.from_pyfile('settings.py', silent=True)
-app.config.setdefault('SQLALCHEMY_DATABASE_URI', 'sqlite:///instance/data.db')
-app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
+
+# choose DB URL from ENV (e.g. Render Postgres) or fall back to local SQLite
+default_sqlite = f"sqlite:///{os.path.join(app.instance_path, 'data.db')}"
+db_url = os.environ.get("DATABASE_URL", default_sqlite)
+app.config['SQLALCHEMY_DATABASE_URI']        = db_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 # ─── Error Handler ────────────────────────────────────────────────────────
