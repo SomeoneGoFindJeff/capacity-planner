@@ -19,10 +19,19 @@
   />
 </head>
 <body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, msg in messages %}
+          <div class="flash flash-{{ category }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
   <header class="header">
     <nav class="nav">
       <div class="logo">
-        <!-- placeholder logo -->
         <span>SM</span>
       </div>
       <ul class="nav-links">
@@ -33,6 +42,7 @@
       </ul>
     </nav>
   </header>
+
   <main class="main">
     {% block content %}{% endblock %}
   </main>

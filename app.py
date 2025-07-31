@@ -1,7 +1,9 @@
 import os
 from logging.config import dictConfig
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import (Flask, render_template, request, redirect,
+                   url_for, jsonify, flash)
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 
 # ─── Structured Logging Setup ────────────────────────────────────────────
 dictConfig({
@@ -32,6 +34,7 @@ dictConfig({
 
 # ─── App & DB Setup ───────────────────────────────────────────────────────
 app = Flask(__name__, instance_relative_config=True)
+app.secret_key = os.environ.get("SECRET_KEY", "dev")  # needed for flash
 
 # ensure the instance folder exists (for local SQLite fallback)
 os.makedirs(app.instance_path, exist_ok=True)
@@ -127,7 +130,7 @@ def list_sprints():
 def add_sprint():
     name = request.form.get('name')
     if not name:
-        app.logger.warning("Attempted to add sprint without a name")
+        flash("Please enter a sprint name.", "warning")
         return redirect(url_for('list_sprints'))
     sprint = Sprint(name=name)
     db.session.add(sprint)
@@ -146,8 +149,6 @@ def delete_sprint(sprint_id):
 @app.route('/sprints/<int:sprint_id>')
 def view_sprint(sprint_id):
     sprint = Sprint.query.get_or_404(sprint_id)
-
-    # Compute each resource’s remaining capacity
     avail_resources = []
     for r in Resource.query.order_by(Resource.name).all():
         used      = sum(a.capacity for a in sprint.assignments
@@ -223,11 +224,17 @@ def list_types():
 @app.route('/types', methods=['POST'])
 def add_type():
     name = request.form.get('name')
-    if name:
-        t = ResourceType(name=name)
-        db.session.add(t)
+    if not name:
+        flash("Please enter a type name.", "warning")
+        return redirect(url_for('list_types'))
+    t = ResourceType(name=name)
+    db.session.add(t)
+    try:
         db.session.commit()
         app.logger.info(f"Added ResourceType(id={t.id})")
+    except IntegrityError:
+        db.session.rollback()
+        flash(f"Type '{name}' already exists.", "warning")
     return redirect(url_for('list_types'))
 
 @app.route('/types/edit/<int:type_id>', methods=['POST'])
@@ -236,8 +243,12 @@ def edit_type(type_id):
     t = ResourceType.query.get_or_404(type_id)
     if new_name:
         t.name = new_name
-        db.session.commit()
-        app.logger.info(f"Renamed ResourceType(id={type_id}) to '{new_name}'")
+        try:
+            db.session.commit()
+            app.logger.info(f"Renamed ResourceType(id={type_id}) to '{new_name}'")
+        except IntegrityError:
+            db.session.rollback()
+            flash(f"Type '{new_name}' already exists.", "warning")
     return redirect(url_for('list_types'))
 
 @app.route('/types/delete/<int:type_id>', methods=['POST'])
@@ -257,11 +268,17 @@ def list_groups():
 @app.route('/groups', methods=['POST'])
 def add_group():
     name = request.form.get('name')
-    if name:
-        g = ResourceGroup(name=name)
-        db.session.add(g)
+    if not name:
+        flash("Please enter a group name.", "warning")
+        return redirect(url_for('list_groups'))
+    g = ResourceGroup(name=name)
+    db.session.add(g)
+    try:
         db.session.commit()
         app.logger.info(f"Added ResourceGroup(id={g.id})")
+    except IntegrityError:
+        db.session.rollback()
+        flash(f"Group '{name}' already exists.", "warning")
     return redirect(url_for('list_groups'))
 
 @app.route('/groups/edit/<int:group_id>', methods=['POST'])
@@ -270,8 +287,12 @@ def edit_group(group_id):
     g = ResourceGroup.query.get_or_404(group_id)
     if new_name:
         g.name = new_name
-        db.session.commit()
-        app.logger.info(f"Renamed ResourceGroup(id={group_id}) to '{new_name}'")
+        try:
+            db.session.commit()
+            app.logger.info(f"Renamed ResourceGroup(id={group_id}) to '{new_name}'")
+        except IntegrityError:
+            db.session.rollback()
+            flash(f"Group '{new_name}' already exists.", "warning")
     return redirect(url_for('list_groups'))
 
 @app.route('/groups/delete/<int:group_id>', methods=['POST'])
@@ -310,11 +331,25 @@ def add_resource():
 @app.route('/resources/edit/<int:resource_id>', methods=['POST'])
 def edit_resource(resource_id):
     new_name = request.form.get('name')
+    type_id  = request.form.get('type_id', type=int)
+    group_id = request.form.get('group_id', type=int)
     r = Resource.query.get_or_404(resource_id)
-    if new_name:
+    updated = False
+    if new_name and new_name != r.name:
         r.name = new_name
+        updated = True
+    if r.type_id != type_id:
+        r.type_id = type_id or None
+        updated = True
+    if r.group_id != group_id:
+        r.group_id = group_id or None
+        updated = True
+    if updated:
         db.session.commit()
-        app.logger.info(f"Renamed Resource(id={resource_id}) to '{new_name}'")
+        app.logger.info(
+            f"Updated Resource(id={resource_id}): "
+            f"name={r.name}, type_id={r.type_id}, group_id={r.group_id}"
+        )
     return redirect(url_for('list_resources'))
 
 @app.route('/resources/delete/<int:resource_id>', methods=['POST'])
@@ -331,5 +366,4 @@ with app.app_context():
 
 # ─── App Runner ──────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    # local dev: tables already ensured above
     app.run(debug=True)
