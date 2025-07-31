@@ -47,6 +47,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# ─── Auto-create tables at startup ───────────────────────────────────────
+with app.app_context():
+    db.create_all()
+
 # ─── Error Handler ────────────────────────────────────────────────────────
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -307,6 +311,7 @@ def edit_resource(resource_id):
 
 # ─── App Runner ──────────────────────────────────────────────────────────
 if __name__ == '__main__':
+    # local dev: ensure tables exist and run with debug
     with app.app_context():
         db.create_all()
     app.run(debug=True)
