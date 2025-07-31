@@ -4,27 +4,49 @@
 <section class="section sprint-detail-section">
   <div class="section-header">
     <h1>{{ sprint.name }}</h1>
+    <form
+      class="inline-form add-project-form"
+      method="post"
+      action="{{ url_for('add_project', sprint_id=sprint.id) }}"
+    >
+      <input
+        type="text"
+        name="name"
+        placeholder="New project name"
+        required
+        class="input"
+      />
+      <button type="submit" class="btn btn-primary">
+        <span class="material-icons">folder_open</span>
+        Add Project
+      </button>
+    </form>
   </div>
+
   <div class="detail-wrap">
     <!-- FILTER PANEL -->
     <aside class="filter-panel">
-      <h4>Filter by Type</h4>
-      <div class="filter-group types">
-        {% for t in filter_types %}
-          <label>
-            <input type="checkbox" class="filter-type" value="{{ t.id }}" />
-            {{ t.name }}
-          </label>
-        {% endfor %}
+      <div class="filter-section">
+        <h4>Filter by Type</h4>
+        <div class="filter-options filter-types">
+          {% for t in filter_types %}
+            <label class="filter-label">
+              <input type="checkbox" class="filter-type" value="{{ t.id }}" />
+              {{ t.name }}
+            </label>
+          {% endfor %}
+        </div>
       </div>
-      <h4>Filter by Group</h4>
-      <div class="filter-group groups">
-        {% for g in filter_groups %}
-          <label>
-            <input type="checkbox" class="filter-group" value="{{ g.id }}" />
-            {{ g.name }}
-          </label>
-        {% endfor %}
+      <div class="filter-section">
+        <h4>Filter by Group</h4>
+        <div class="filter-options filter-groups">
+          {% for g in filter_groups %}
+            <label class="filter-label">
+              <input type="checkbox" class="filter-group" value="{{ g.id }}" />
+              {{ g.name }}
+            </label>
+          {% endfor %}
+        </div>
       </div>
     </aside>
 
@@ -32,27 +54,28 @@
     <section class="resource-panel">
       <h3>Available Resources</h3>
       <ul id="resource-pool">
-        {% if avail_resources %}
-          {% for r, avail in avail_resources %}
-            <li
-              class="draggable-resource"
-              draggable="true"
-              data-id="{{ r.id }}"
-              data-capacity="{{ avail }}"
-              data-type-id="{{ r.type.id if r.type }}"
-              data-group-id="{{ r.group.id if r.group }}"
-            >
-              <strong>{{ r.name }}</strong>
-              {% if r.type or r.group %}
-                <div class="resource-meta">
-                  {% if r.type %}<span class="meta-type">{{ r.type.name }}</span>{% endif %}
-                  {% if r.group %}<span class="meta-group">{{ r.group.name }}</span>{% endif %}
-                </div>
-              {% endif %}
-              <div class="capacity-label">{{ avail }}%</div>
-            </li>
-          {% endfor %}
-        {% else %}
+        {% set shown = false %}
+        {% for r, avail in avail_resources %}
+          {% set shown = true %}
+          <li
+            class="draggable-resource"
+            draggable="true"
+            data-id="{{ r.id }}"
+            data-capacity="{{ avail }}"
+            data-type-id="{{ r.type.id if r.type }}"
+            data-group-id="{{ r.group.id if r.group }}"
+          >
+            <strong>{{ r.name }}</strong>
+            {% if r.type or r.group %}
+              <div class="resource-meta">
+                {% if r.type %}<span class="meta-type">{{ r.type.name }}</span>{% endif %}
+                {% if r.group %}<span class="meta-group">{{ r.group.name }}</span>{% endif %}
+              </div>
+            {% endif %}
+            <div class="capacity-label">{{ avail }}%</div>
+          </li>
+        {% endfor %}
+        {% if not shown %}
           <li><em>None left to assign.</em></li>
         {% endif %}
       </ul>
@@ -72,7 +95,12 @@
               action="{{ url_for('edit_project', sprint_id=sprint.id, project_id=proj.id) }}"
               class="inline-form"
             >
-              <input name="name" value="{{ proj.name }}" required class="input input-small" />
+              <input
+                name="name"
+                value="{{ proj.name }}"
+                required
+                class="input input-small"
+              />
               <button title="Rename" class="btn btn-secondary">
                 <span class="material-icons">edit</span>
               </button>
@@ -117,5 +145,6 @@
     </section>
   </div>
 </section>
+
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 {% endblock %}
