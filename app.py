@@ -33,7 +33,7 @@ dictConfig({
 # ─── App & DB Setup ───────────────────────────────────────────────────────
 app = Flask(__name__, instance_relative_config=True)
 
-# ensure the instance folder exists (for local SQLite)
+# ensure the instance folder exists (for local SQLite fallback)
 os.makedirs(app.instance_path, exist_ok=True)
 
 # load any runtime config
@@ -46,10 +46,6 @@ app.config['SQLALCHEMY_DATABASE_URI']        = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
-# ─── Auto-create tables at startup ───────────────────────────────────────
-with app.app_context():
-    db.create_all()
 
 # ─── Error Handler ────────────────────────────────────────────────────────
 @app.errorhandler(Exception)
@@ -291,14 +287,6 @@ def add_resource():
         app.logger.info(f"Added Resource(id={r.id})")
     return redirect(url_for('list_resources'))
 
-@app.route('/resources/delete/<int:resource_id>', methods=['POST'])
-def delete_resource(resource_id):
-    r = Resource.query.get_or_404(resource_id)
-    db.session.delete(r)
-    db.session.commit()
-    app.logger.info(f"Deleted Resource(id={resource_id})")
-    return redirect(url_for('list_resources'))
-
 @app.route('/resources/edit/<int:resource_id>', methods=['POST'])
 def edit_resource(resource_id):
     new_name = request.form.get('name')
@@ -309,9 +297,19 @@ def edit_resource(resource_id):
         app.logger.info(f"Renamed Resource(id={resource_id}) to '{new_name}'")
     return redirect(url_for('list_resources'))
 
+@app.route('/resources/delete/<int:resource_id>', methods=['POST'])
+def delete_resource(resource_id):
+    r = Resource.query.get_or_404(resource_id)
+    db.session.delete(r)
+    db.session.commit()
+    app.logger.info(f"Deleted Resource(id={resource_id})")
+    return redirect(url_for('list_resources'))
+
+# ─── Auto-create tables at startup ───────────────────────────────────────
+with app.app_context():
+    db.create_all()
+
 # ─── App Runner ──────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    # local dev: ensure tables exist and run with debug
-    with app.app_context():
-        db.create_all()
+    # local dev: tables already ensured above
     app.run(debug=True)
