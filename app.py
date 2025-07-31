@@ -230,6 +230,16 @@ def add_type():
         app.logger.info(f"Added ResourceType(id={t.id})")
     return redirect(url_for('list_types'))
 
+@app.route('/types/edit/<int:type_id>', methods=['POST'])
+def edit_type(type_id):
+    new_name = request.form.get('name')
+    t = ResourceType.query.get_or_404(type_id)
+    if new_name:
+        t.name = new_name
+        db.session.commit()
+        app.logger.info(f"Renamed ResourceType(id={type_id}) to '{new_name}'")
+    return redirect(url_for('list_types'))
+
 @app.route('/types/delete/<int:type_id>', methods=['POST'])
 def delete_type(type_id):
     t = ResourceType.query.get_or_404(type_id)
@@ -252,6 +262,16 @@ def add_group():
         db.session.add(g)
         db.session.commit()
         app.logger.info(f"Added ResourceGroup(id={g.id})")
+    return redirect(url_for('list_groups'))
+
+@app.route('/groups/edit/<int:group_id>', methods=['POST'])
+def edit_group(group_id):
+    new_name = request.form.get('name')
+    g = ResourceGroup.query.get_or_404(group_id)
+    if new_name:
+        g.name = new_name
+        db.session.commit()
+        app.logger.info(f"Renamed ResourceGroup(id={group_id}) to '{new_name}'")
     return redirect(url_for('list_groups'))
 
 @app.route('/groups/delete/<int:group_id>', methods=['POST'])
