@@ -1,67 +1,61 @@
+<!-- templates/resources.html -->
 {% extends 'base.html' %}
 {% block content %}
-  <h2>Resources</h2>
-
-  <!-- Add new resource -->
-  <form method="post" action="{{ url_for('add_resource') }}">
-    <input type="text" name="name" placeholder="Name" required>
-    <select name="type_id">
-      <option value="">-- Type --</option>
-      {% for t in types %}
-        <option value="{{ t.id }}">{{ t.name }}</option>
-      {% endfor %}
-    </select>
-    <select name="group_id">
-      <option value="">-- Group --</option>
-      {% for g in groups %}
-        <option value="{{ g.id }}">{{ g.name }}</option>
-      {% endfor %}
-    </select>
-    <button>
-      <span class="material-icons">person_add</span> Add
-    </button>
-  </form>
-
-  <!-- List existing resources -->
-  <ul>
+<section class="section">
+  <div class="section-header">
+    <h1>Resources</h1>
+    <form
+      class="inline-form"
+      method="post"
+      action="{{ url_for('add_resource') }}"
+    >
+      <input
+        type="text"
+        name="name"
+        placeholder="New resource name"
+        required
+        class="input"
+      />
+      <button type="submit" class="btn btn-primary">
+        <span class="material-icons">add</span> Add Resource
+      </button>
+    </form>
+  </div>
+  <div class="cards-container">
     {% for r in resources %}
-      <li>
-        <form method="post"
-              action="{{ url_for('edit_resource', resource_id=r.id) }}"
-              style="display:inline;">
-          <input type="text" name="name" value="{{ r.name }}" required>
-          <select name="type_id">
-            <option value="">-- Type --</option>
-            {% for t in types %}
-              <option value="{{ t.id }}"
-                      {% if r.type_id==t.id %}selected{% endif %}>
-                {{ t.name }}
-              </option>
-            {% endfor %}
-          </select>
-          <select name="group_id">
-            <option value="">-- Group --</option>
-            {% for g in groups %}
-              <option value="{{ g.id }}"
-                      {% if r.group_id==g.id %}selected{% endif %}>
-                {{ g.name }}
-              </option>
-            {% endfor %}
-          </select>
-          <button title="Update">
-            <span class="material-icons">edit</span>
-          </button>
-        </form>
-        <form method="post"
-              action="{{ url_for('delete_resource', resource_id=r.id) }}"
-              style="display:inline;">
-          <button title="Delete">
-            <span class="material-icons">delete</span>
-          </button>
-        </form>
-      </li>
+      <div class="card resource-card">
+        <h2>{{ r.name }}</h2>
+        {% if r.type or r.group %}
+          <div class="resource-meta">
+            {% if r.type %}<span class="meta-type">{{ r.type.name }}</span>{% endif %}
+            {% if r.group %}<span class="meta-group">{{ r.group.name }}</span>{% endif %}
+          </div>
+        {% endif %}
+        <div class="card-actions">
+          <form
+            method="post"
+            action="{{ url_for('edit_resource', resource_id=r.id) }}"
+            class="inline-form"
+          >
+            <input name="name" value="{{ r.name }}" required class="input input-small" />
+            <button title="Rename" class="btn btn-secondary">
+              <span class="material-icons">edit</span>
+            </button>
+          </form>
+          <form
+            method="post"
+            action="{{ url_for('delete_resource', resource_id=r.id) }}"
+            class="inline-form"
+          >
+            <button title="Delete" class="btn btn-secondary">
+              <span class="material-icons">delete</span>
+            </button>
+          </form>
+        </div>
+      </div>
     {% else %}
-      <li><em>No resources yet.</em></li>
+      <p>No resources defined yet.</p>
     {% endfor %}
-  </ul>
+  </div>
+</section>
 {% endblock %}

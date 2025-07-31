@@ -1,35 +1,53 @@
+<!-- templates/types.html -->
 {% extends 'base.html' %}
 {% block content %}
-  <h2>Types</h2>
-
-  <form method="post" action="{{ url_for('add_type') }}">
-    <input type="text" name="name" placeholder="New type name" required>
-    <button>
-      <span class="material-icons">add</span> Add Type
-    </button>
-  </form>
-
-  <ul>
+<section class="section">
+  <div class="section-header">
+    <h1>Resource Types</h1>
+    <form
+      class="inline-form"
+      method="post"
+      action="{{ url_for('add_type') }}"
+    >
+      <input
+        type="text"
+        name="name"
+        placeholder="New type name"
+        required
+        class="input"
+      />
+      <button type="submit" class="btn btn-primary">
+        <span class="material-icons">add</span> Add Type
+      </button>
+    </form>
+  </div>
+  <ul class="list-container">
     {% for t in types %}
-      <li>
-        <form method="post"
-              action="{{ url_for('edit_type', type_id=t.id) }}"
-              style="display:inline;">
-          <input type="text" name="name" value="{{ t.name }}" required>
-          <button title="Rename">
+      <li class="list-item">
+        <span>{{ t.name }}</span>
+        <form
+          method="post"
+          action="{{ url_for('edit_type', type_id=t.id) }}"
+          class="inline-form"
+        >
+          <input name="name" value="{{ t.name }}" required class="input input-small" />
+          <button title="Rename" class="btn btn-secondary">
             <span class="material-icons">edit</span>
           </button>
         </form>
-        <form method="post"
-              action="{{ url_for('delete_type', type_id=t.id) }}"
-              style="display:inline;">
-          <button title="Delete">
+        <form
+          method="post"
+          action="{{ url_for('delete_type', type_id=t.id) }}"
+          class="inline-form"
+        >
+          <button title="Delete" class="btn btn-secondary">
             <span class="material-icons">delete</span>
           </button>
         </form>
       </li>
     {% else %}
-      <li><em>No types yet.</em></li>
+      <p>No types defined yet.</p>
     {% endfor %}
   </ul>
+</section>
 {% endblock %}
