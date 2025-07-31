@@ -13,91 +13,47 @@
              class="input" />
       <select name="type_id" class="input">
         <option value="">No Type</option>
-        {% for t in types %}
-          <option value="{{ t.id }}">{{ t.name }}</option>
-        {% endfor %}
+        {% for t in types %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
       </select>
       <select name="group_id" class="input">
         <option value="">No Group</option>
-        {% for g in groups %}
-          <option value="{{ g.id }}">{{ g.name }}</option>
-        {% endfor %}
+        {% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
       </select>
-      <button type="submit" class="btn btn-primary">
+      <button class="btn btn-primary">
         <span class="material-icons">add</span> Add Resource
       </button>
     </form>
   </div>
 
-  <div class="cards-container">
-    {% for r in resources %}
-      <div class="resource-wrapper" data-resource-id="{{ r.id }}">
-        <!-- Static card -->
-        <div class="card resource-card">
-          <!-- edit‐toggle icon -->
-          <button class="edit-toggle btn-icon"
-                  data-resource-id="{{ r.id }}"
-                  aria-label="Edit {{ r.name }}">
-            <span class="material-icons">edit</span>
-          </button>
-
-          <h2>{{ r.name }}</h2>
-          {% if r.type or r.group %}
-            <div class="resource-meta">
-              {% if r.type %}<span class="meta-type">{{ r.type.name }}</span>{% endif %}
-              {% if r.group %}<span class="meta-group">{{ r.group.name }}</span>{% endif %}
-            </div>
-          {% endif %}
-        </div>
-
-        <!-- Hidden edit panel -->
-        <div class="edit-panel" id="edit-panel-{{ r.id }}" hidden>
-          <form method="post"
-                action="{{ url_for('edit_resource', resource_id=r.id) }}"
-                class="inline-form edit-form">
-            <input name="name"
-                   value="{{ r.name }}"
-                   required
-                   class="input input-small" />
-            <select name="type_id" class="input input-small">
-              <option value="">No Type</option>
-              {% for t in types %}
-                <option value="{{ t.id }}"
-                        {% if r.type_id == t.id %}selected{% endif %}>
-                  {{ t.name }}
-                </option>
-              {% endfor %}
-            </select>
-            <select name="group_id" class="input input-small">
-              <option value="">No Group</option>
-              {% for g in groups %}
-                <option value="{{ g.id }}"
-                        {% if r.group_id == g.id %}selected{% endif %}>
-                  {{ g.name }}
-                </option>
-              {% endfor %}
-            </select>
-            <button type="submit" title="Save" class="btn btn-secondary">
-              <span class="material-icons">check</span>
-            </button>
-            <button type="button" class="btn btn-secondary cancel-edit"
-                    data-resource-id="{{ r.id }}">
-              <span class="material-icons">close</span>
-            </button>
-          </form>
-          <form method="post"
-                action="{{ url_for('delete_resource', resource_id=r.id) }}"
-                class="inline-form delete-form">
-            <button title="Delete" class="btn btn-secondary">
-              <span class="material-icons">delete</span>
-            </button>
-          </form>
-        </div>
-      </div>
-    {% else %}
-      <p>No resources defined yet.</p>
-    {% endfor %}
-  </div>
+  <table id="resources-table"
+         class="data-table"
+         data-types='{{ types|tojson }}'
+         data-groups='{{ groups|tojson }}'>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Group</th>
+        <th style="width:160px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in resources %}
+      <tr data-resource-id="{{ r.id }}"
+          data-type-id="{{ r.type_id or '' }}"
+          data-group-id="{{ r.group_id or '' }}">
+        <td class="name-cell">{{ r.name }}</td>
+        <td class="type-cell">{{ r.type.name if r.type }}</td>
+        <td class="group-cell">{{ r.group.name if r.group }}</td>
+        <td class="action-cell">
+          <button class="btn btn-secondary edit-btn"     title="Edit"><span class="material-icons">edit</span></button>
+          <button class="btn btn-secondary delete-btn"   title="Delete"><span class="material-icons">delete</span></button>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4"><em>No resources yet.</em></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </section>
-<script src="{{ url_for('static', filename='app.js') }}"></script>
 {% endblock %}
