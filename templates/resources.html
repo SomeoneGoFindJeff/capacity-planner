@@ -3,14 +3,14 @@
 <section class="section">
   <div class="section-header">
     <h1>Resources</h1>
-    <form class="inline-form"
-          method="post"
-          action="{{ url_for('add_resource') }}">
-      <input type="text"
-             name="name"
-             placeholder="New resource name"
-             required
-             class="input" />
+    <form class="inline-form" method="post" action="{{ url_for('add_resource') }}">
+      <input
+        type="text"
+        name="name"
+        placeholder="New resource name"
+        required
+        class="input"
+      />
       <select name="type_id" class="input">
         <option value="">No Type</option>
         {% for t in types %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
@@ -27,8 +27,8 @@
 
   <table id="resources-table"
          class="data-table"
-         data-types='{{ types|tojson }}'
-         data-groups='{{ groups|tojson }}'>
+         data-types='{{ types_data|tojson }}'
+         data-groups='{{ groups_data|tojson }}'>
     <thead>
       <tr>
         <th>Name</th>
@@ -46,8 +46,12 @@
         <td class="type-cell">{{ r.type.name if r.type }}</td>
         <td class="group-cell">{{ r.group.name if r.group }}</td>
         <td class="action-cell">
-          <button class="btn btn-secondary edit-btn"     title="Edit"><span class="material-icons">edit</span></button>
-          <button class="btn btn-secondary delete-btn"   title="Delete"><span class="material-icons">delete</span></button>
+          <button class="btn btn-secondary edit-btn"   title="Edit">
+            <span class="material-icons">edit</span>
+          </button>
+          <button class="btn btn-secondary delete-btn" title="Delete">
+            <span class="material-icons">delete</span>
+          </button>
         </td>
       </tr>
       {% else %}

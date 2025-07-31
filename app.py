@@ -12,8 +12,8 @@ dictConfig({
     "version": 1,
     "formatters": {"default": {"format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"}},
     "handlers": {
-        "wsgi":   {"class":"logging.StreamHandler","stream":"ext://sys.stdout","formatter":"default"},
-        "file":   {"class":"logging.FileHandler","filename":"capacity_planner.log","formatter":"default","level":"INFO"}
+        "wsgi": {"class":"logging.StreamHandler","stream":"ext://sys.stdout","formatter":"default"},
+        "file": {"class":"logging.FileHandler","filename":"capacity_planner.log","formatter":"default","level":"INFO"}
     },
     "root": {"level":"INFO","handlers":["wsgi","file"]}
 })
@@ -24,7 +24,6 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev")
 os.makedirs(app.instance_path, exist_ok=True)
 app.config.from_pyfile('settings.py', silent=True)
 
-# DATABASE_URL env or fallback to SQLite in instance/
 default_sqlite = f"sqlite:///{os.path.join(app.instance_path,'data.db')}"
 app.config['SQLALCHEMY_DATABASE_URI']        = os.environ.get("DATABASE_URL", default_sqlite)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -105,7 +104,6 @@ def delete_sprint(sprint_id):
 @app.route('/sprints/<int:sprint_id>')
 def view_sprint(sprint_id):
     sprint = Sprint.query.get_or_404(sprint_id)
-    # compute availability
     avail_resources = []
     for r in Resource.query.order_by(Resource.name).all():
         used      = sum(a.capacity for a in sprint.assignments if a.resource_id==r.id)
@@ -169,7 +167,6 @@ def unassign_resource():
     sid = data.get('sprint_id')
     pid = data.get('project_id')
     rid = data.get('resource_id')
-    # find and delete that one assignment
     a = Assignment.query.filter_by(
       sprint_id=sid, project_id=pid, resource_id=rid
     ).first()
@@ -207,7 +204,7 @@ def edit_type(type_id):
     new_name = request.form.get('name')
     t = ResourceType.query.get_or_404(type_id)
     if new_name:
-        t.name = new_name
+        t.name=new_name
         try:
             db.session.commit()
             app.logger.info(f"Renamed ResourceType(id={type_id})")
@@ -269,10 +266,19 @@ def delete_group(group_id):
 # ─── Resources CRUD ──────────────────────────────────────────────────────
 @app.route('/resources')
 def list_resources():
-    rs = Resource.query.order_by(Resource.name).all()
-    ts = ResourceType.query.order_by(ResourceType.name).all()
-    gs = ResourceGroup.query.order_by(ResourceGroup.name).all()
-    return render_template('resources.html', resources=rs, types=ts, groups=gs)
+    rs        = Resource.query.order_by(Resource.name).all()
+    ts        = ResourceType.query.order_by(ResourceType.name).all()
+    gs        = ResourceGroup.query.order_by(ResourceGroup.name).all()
+    types_data  = [{'id':t.id, 'name':t.name} for t in ts]
+    groups_data = [{'id':g.id, 'name':g.name} for g in gs]
+    return render_template(
+      'resources.html',
+      resources  = rs,
+      types      = ts,
+      groups     = gs,
+      types_data = types_data,
+      groups_data= groups_data
+    )
 
 @app.route('/resources', methods=['POST'])
 def add_resource():
