@@ -1,28 +1,240 @@
 /* static/style.css */
 
-/* …all your existing tokens & global rules above… */
+/*───────────────────────────────────────────
+  1. DESIGN TOKENS
+───────────────────────────────────────────*/
+:root {
+  /* Color Palette */
+  --color-primary-50:  #F2F3FF;
+  --color-primary-100: #EBEDFF;
+  --color-primary-300: #CACFFB;
+  --color-primary-500: #5A67D8;
+  --color-primary-600: #4C51BF;
+  --color-primary-700: #3C366B;
+  --color-primary-900: #1A1A3A;
+  --color-primary-muted: #A0AEC0;
 
-/* Sprint‐Detail tweaks */
+  --color-secondary-50:  #E6FFFA;
+  --color-secondary-100: #B2F5EA;
+  --color-secondary-300: #4FD1C5;
+  --color-secondary-500: #38B2AC;
+  --color-secondary-600: #2C7A7B;
+  --color-secondary-700: #285E61;
+  --color-secondary-900: #1A404C;
+  --color-secondary-muted: #A0AEC0;
+
+  --color-neutral-100: #F7FAFC;
+  --color-neutral-200: #EDF2F7;
+  --color-neutral-300: #E2E8F0;
+  --color-neutral-400: #CBD5E0;
+  --color-neutral-500: #A0AEC0;
+  --color-neutral-600: #718096;
+  --color-neutral-700: #4A5568;
+  --color-neutral-800: #2D3748;
+  --color-neutral-900: #1A202C;
+  --color-white:       #FFFFFF;
+  --color-black:       #000000;
+
+  /* Typography */
+  --font-base: 'Poppins', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+
+  --type-h1-size: 32px;  --type-h1-weight: 600;  --type-h1-line: 1.3;
+  --type-h2-size: 24px;  --type-h2-weight: 600;  --type-h2-line: 1.4;
+  --type-h3-size: 20px;  --type-h3-weight: 600;  --type-h3-line: 1.4;
+  --type-h4-size: 18px;  --type-h4-weight: 500;  --type-h4-line: 1.5;
+  --type-h5-size: 16px;  --type-h5-weight: 500;  --type-h5-line: 1.5;
+  --type-h6-size: 14px;  --type-h6-weight: 500;  --type-h6-line: 1.5;
+
+  --type-body-size:    16px; --type-body-weight: 400; --type-body-line: 1.6;
+  --type-caption-size: 14px; --type-caption-weight: 400; --type-caption-line: 1.4;
+
+  /* Spacing & Grid */
+  --space-xxs: 4px;   --space-xs: 8px;   --space-s: 16px;
+  --space-m:   24px;  --space-l: 32px;  --space-xl: 48px;
+  --space-xxl: 64px;
+
+  --bp-desktop:    1024px;
+  --bp-widescreen: 1440px;
+
+  /* Shape Language */
+  --radius-small:  4px;
+  --radius-medium: 8px;
+  --radius-large:  16px;
+  --radius-pill:   9999px;
+
+  --blob-small-w: 100px;  --blob-small-h: 80px;
+  --blob-medium-w: 200px; --blob-medium-h: 160px;
+  --blob-large-w: 400px;  --blob-large-h: 320px;
+
+  /* Elevation & Shadows */
+  --shadow-soft:   0 4px 10px rgba(0,0,0,0.08);
+  --shadow-medium: 0 8px 20px rgba(0,0,0,0.12);
+
+  /* Motion */
+  --motion-fast:   150ms ease-in-out;
+  --motion-medium: 200ms ease-in-out;
+  --motion-slow:   300ms ease-in-out;
+}
+
+/*───────────────────────────────────────────
+  2. GLOBAL RESET & BASE
+───────────────────────────────────────────*/
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font: var(--type-body-weight) var(--type-body-size)/var(--type-body-line) var(--font-base);
+  color: var(--color-neutral-900);
+  background: var(--color-neutral-100);
+  min-height: 100vh;
+}
+
+/*───────────────────────────────────────────
+  3. LAYOUT UTILITIES
+───────────────────────────────────────────*/
+.section {
+  padding: var(--space-l) var(--space-m);
+  max-width: 1200px;
+  margin: 0 auto;
+}
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-m);
 }
-
-/* Add‐project form spacing */
-.add-project-form {
+.inline-form {
+  display: flex;
+  align-items: center;
   gap: var(--space-xs);
 }
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-m);
+}
+.list-container {
+  list-style: none;
+  margin-top: var(--space-s);
+}
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xs) var(--space-s);
+  border-bottom: 1px solid var(--color-neutral-300);
+}
 
-/* Detail wrap grid remains: 240px sidebar, resources, projects */
+/*───────────────────────────────────────────
+  4. HEADER / NAV
+───────────────────────────────────────────*/
+.header, header {
+  background: var(--color-white);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-s) var(--space-m);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: var(--space-l);
+}
+.nav-links a {
+  text-decoration: none;
+  color: var(--color-neutral-700);
+  transition: color var(--motion-fast);
+}
+.nav-links a:hover {
+  color: var(--color-primary-600);
+}
+
+/*───────────────────────────────────────────
+  5. CARDS & PANELS
+───────────────────────────────────────────*/
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-m);
+}
+.card-actions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-s);
+}
+
+/*───────────────────────────────────────────
+  6. BUTTONS
+───────────────────────────────────────────*/
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  font: var(--type-body-weight) var(--type-body-size)/var(--type-body-line) var(--font-base);
+  padding: var(--space-xs) var(--space-s);
+  border-radius: var(--radius-medium);
+  border: none;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.btn-primary {
+  background: var(--color-primary-500);
+  color: var(--color-white);
+}
+.btn-primary:hover {
+  background: var(--color-primary-600);
+}
+.btn-secondary {
+  background: var(--color-secondary-muted);
+  color: var(--color-neutral-800);
+}
+.btn-secondary:hover {
+  background: var(--color-secondary-300);
+}
+.btn-disabled {
+  background: var(--color-primary-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/*───────────────────────────────────────────
+  7. FORM INPUTS
+───────────────────────────────────────────*/
+.input {
+  font: var(--type-body-size)/var(--type-body-line) var(--font-base);
+  padding: var(--space-xs);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-small);
+  transition: border-color var(--motion-fast);
+}
+.input:focus {
+  border-color: var(--color-primary-500);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(90,103,216,0.2);
+}
+.input[disabled] {
+  background: var(--color-neutral-200);
+  cursor: not-allowed;
+}
+
+/*───────────────────────────────────────────
+  8. SPRINT DETAIL LAYOUT
+───────────────────────────────────────────*/
 .detail-wrap {
   display: grid;
   grid-template-columns: 240px 1fr 2fr;
   gap: var(--space-m);
 }
-
-/* Filter panel styling */
 .filter-panel {
   display: flex;
   flex-direction: column;
@@ -50,7 +262,7 @@
   font-size: var(--type-body-size);
 }
 
-/* Optional: make filter panel sticky if tall */
+/* Sticky filters (optional) */
 @media (min-width: var(--bp-desktop)) {
   .filter-panel {
     position: sticky;
@@ -58,6 +270,86 @@
   }
 }
 
-/* Adjust resource‐panel & projects‐container as before… */
-/* (No changes needed there unless you want more spacing) */
+/*───────────────────────────────────────────
+  9. AVAILABLE RESOURCES
+───────────────────────────────────────────*/
+.resource-panel {
+  background: var(--color-white);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-s);
+}
+.resource-panel ul {
+  list-style: none;
+  margin-top: var(--space-xs);
+}
+.draggable-resource {
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-small);
+  padding: var(--space-xs);
+  margin-bottom: var(--space-xs);
+  cursor: grab;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.resource-meta {
+  display: flex;
+  gap: var(--space-xxs);
+  font-size: var(--type-caption-size);
+}
+.capacity-label {
+  font-size: var(--type-caption-size);
+  color: var(--color-neutral-600);
+}
 
+/*───────────────────────────────────────────
+ 10. PROJECT STRIP
+───────────────────────────────────────────*/
+.projects-container {
+  display: flex;
+  gap: var(--space-m);
+  overflow-x: auto;
+  padding-bottom: var(--space-s);
+}
+.project-card {
+  min-width: 200px;
+}
+.project-dropzone.dragover {
+  border: 2px dashed var(--color-primary-500);
+}
+
+/*───────────────────────────────────────────
+ 11. LOADING & SKELETONS
+───────────────────────────────────────────*/
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%     { opacity: 0.4; }
+}
+.skeleton {
+  background: var(--color-neutral-200);
+  border-radius: var(--radius-small);
+  animation: pulse var(--motion-medium) infinite;
+}
+.spinner {
+  border: 4px solid var(--color-neutral-300);
+  border-top-color: var(--color-primary-500);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1.2s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/*───────────────────────────────────────────
+ 12. DARK MODE
+───────────────────────────────────────────*/
+@media (prefers-color-scheme: dark) {
+  body {
+    background: var(--color-neutral-900);
+    color: var(--color-neutral-100);
+  }
+  /* You can override other tokens here if needed */
+}
