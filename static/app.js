@@ -1,6 +1,25 @@
 // static/app.js
 document.addEventListener('DOMContentLoaded', () => {
-  // ─── Helper: make a resource draggable & splittable ───
+  // ─── Toggle edit-panel on edit-icon click ──────────────────────────
+  document.querySelectorAll('.edit-toggle').forEach(btn => {
+    btn.addEventListener('click', ev => {
+      ev.preventDefault();
+      const id    = btn.dataset.resourceId;
+      const panel = document.getElementById(`edit-panel-${id}`);
+      panel.hidden = !panel.hidden;
+    });
+  });
+
+  // ─── Cancel button inside panel ───────────────────────────────────
+  document.querySelectorAll('.cancel-edit').forEach(btn => {
+    btn.addEventListener('click', ev => {
+      const id    = btn.dataset.resourceId;
+      const panel = document.getElementById(`edit-panel-${id}`);
+      panel.hidden = true;
+    });
+  });
+
+  // ─── Helper: make a resource draggable & splittable ─────────────
   function setupResource(el) {
     el.addEventListener('dragstart', ev => {
       ev.dataTransfer.setData('text/plain', el.dataset.id);
@@ -50,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupResource(el);
   });
 
-  // ─── Project dropzones ───
+  // ─── Project dropzones ────────────────────────────────────────────
   document.querySelectorAll('.project-dropzone').forEach(zone => {
     zone.addEventListener('dragover', ev => {
       ev.preventDefault();
@@ -75,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ─── Unassign buttons ───
+  // ─── Unassign buttons ─────────────────────────────────────────────
   document.querySelectorAll('.unassign-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const zone     = btn.closest('.project-dropzone');
@@ -93,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ─── FILTERING LOGIC ───
+  // ─── FILTERING LOGIC ─────────────────────────────────────────────
   const typeCheckboxes  = Array.from(document.querySelectorAll('input.filter-type'));
   const groupCheckboxes = Array.from(document.querySelectorAll('input.filter-group'));
 
