@@ -7,7 +7,7 @@ from flask import (
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 
-# ─── Logging Setup ──────────────────────────────────────────────────────
+# ─── Logging Setup ─────────────────────────────────────────────────────
 dictConfig({
     "version": 1,
     "formatters": {"default": {"format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"}},
@@ -18,13 +18,12 @@ dictConfig({
     "root": {"level": "INFO", "handlers": ["wsgi", "file"]}
 })
 
-# ─── App & DB Setup ────────────────────────────────────────────────────
+# ─── App & DB Setup ───────────────────────────────────────────────────
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = os.environ.get("SECRET_KEY", "dev")
 os.makedirs(app.instance_path, exist_ok=True)
 app.config.from_pyfile('settings.py', silent=True)
 
-# default to SQLite in instance/data.db, or use DATABASE_URL
 default_sqlite = f"sqlite:///{os.path.join(app.instance_path, 'data.db')}"
 db_url = os.environ.get("DATABASE_URL", default_sqlite)
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
@@ -38,13 +37,13 @@ if db_url == default_sqlite:
 # Initialize SQLAlchemy
 db = SQLAlchemy(app)
 
-# ─── Global Error Handler ───────────────────────────────────────────────
+# ─── Global Error Handler ──────────────────────────────────────────────
 @app.errorhandler(Exception)
 def handle_exception(e):
     app.logger.exception("❌ Unhandled Exception:")
     return render_template('error.html', error=e), 500
 
-# ─── Models ─────────────────────────────────────────────────────────────
+# ─── Models ────────────────────────────────────────────────────────────
 class Sprint(db.Model):
     id          = db.Column(db.Integer, primary_key=True)
     name        = db.Column(db.String(80), nullable=False)
@@ -81,7 +80,7 @@ class Assignment(db.Model):
     resource_id = db.Column(db.Integer, db.ForeignKey('resource.id'),  nullable=False)
     capacity    = db.Column(db.Integer, default=100)
 
-# ─── Sprint Views ────────────────────────────────────────────────────────
+# ─── Sprint Views ─────────────────────────────────────────────────────
 @app.route('/')
 def home():
     return redirect(url_for('list_sprints'))
@@ -130,7 +129,7 @@ def view_sprint(sprint_id):
         filter_groups=groups
     )
 
-# ─── Project CRUD ────────────────────────────────────────────────────────
+# ─── Project CRUD ─────────────────────────────────────────────────────
 @app.route('/sprints/<int:sprint_id>/projects', methods=['POST'])
 def add_project(sprint_id):
     name = request.form.get('name')
@@ -159,7 +158,7 @@ def delete_project(sprint_id, proj_id):
     app.logger.info(f"Deleted Project(id={proj_id})")
     return redirect(url_for('view_sprint', sprint_id=sprint_id))
 
-# ─── Assign / Unassign APIs ──────────────────────────────────────────────
+# ─── Assign / Unassign APIs ────────────────────────────────────────────
 @app.route('/assign', methods=['POST'])
 def assign_resource():
     data = request.json or {}
@@ -267,7 +266,7 @@ def edit_group(group_id):
             app.logger.info(f"Renamed ResourceGroup(id={group_id})")
         except IntegrityError:
             db.session.rollback()
-            flash(f"Group '{new_name}' already exists.",("warning"))
+            flash(f"Group '{new_name}' already exists.", "warning")
     return redirect(url_for('list_groups'))
 
 @app.route('/groups/delete/<int:group_id>', methods=['POST'])
@@ -278,7 +277,62 @@ def delete_group(group_id):
     app.logger.info(f"Deleted ResourceGroup(id={group_id})")
     return redirect(url_for('list_groups'))
 
-# ─── Ensure tables exist & run ───────────────────────────────────────────
+# ─── Resource CRUD ─────────────────────────────────────────────────────
+@app.route('/resources')
+def list_resources():
+    rs = Resource.query.order_by(Resource.name).all()
+    ts = ResourceType.query.order_by(ResourceType.name).all()
+    gs = ResourceGroup.query.order_by(ResourceGroup.name).all()
+    types_data  = [{'id': t.id, 'name': t.name} for t in ts]
+    groups_data = [{'id': g.id, 'name': g.name} for g in gs]
+    return render_template(
+        'resources.html',
+        resources=rs,
+        types=ts,
+        groups=gs,
+        types_data=types_data,
+        groups_data=groups_data
+    )
+
+@app.route('/resources', methods=['POST'])
+def add_resource():
+    name     = request.form.get('name')
+    type_id  = request.form.get('type_id', type=int)
+    group_id = request.form.get('group_id', type=int)
+    if name:
+        r = Resource(
+            name=name,
+            type_id=type_id or None,
+            group_id=group_id or None
+        )
+        db.session.add(r)
+        db.session.commit()
+        app.logger.info(f"Added Resource(id={r.id})")
+    return redirect(url_for('list_resources'))
+
+@app.route('/resources/edit/<int:resource_id>', methods=['POST'])
+def edit_resource(resource_id):
+    r = Resource.query.get_or_404(resource_id)
+    new_name  = request.form.get('name')
+    new_type  = request.form.get('type_id', type=int)
+    new_group = request.form.get('group_id', type=int)
+    if new_name and new_name != r.name:
+        r.name = new_name
+    r.type_id  = new_type or None
+    r.group_id = new_group or None
+    db.session.commit()
+    app.logger.info(f"Updated Resource(id={resource_id})")
+    return redirect(url_for('list_resources'))
+
+@app.route('/resources/delete/<int:resource_id>', methods=['POST'])
+def delete_resource(resource_id):
+    r = Resource.query.get_or_404(resource_id)
+    db.session.delete(r)
+    db.session.commit()
+    app.logger.info(f"Deleted Resource(id={resource_id})")
+    return redirect(url_for('list_resources'))
+
+# ─── Ensure tables exist & run ─────────────────────────────────────────
 with app.app_context():
     db.create_all()
 
