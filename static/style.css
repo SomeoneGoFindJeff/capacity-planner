@@ -293,7 +293,7 @@ body {
 .filter-label {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--space-xxs);
   cursor: pointer;
   font-size: var(--type-body-size);
 }
@@ -387,5 +387,4 @@ body {
     background: var(--color-neutral-900);
     color: var(--color-neutral-100);
   }
-  /* You can override other tokens here if needed */
 }

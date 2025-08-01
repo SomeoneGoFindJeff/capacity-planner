@@ -4,28 +4,43 @@
   <div class="section-header">
     <h1>Resource Types</h1>
     <form class="inline-form" method="post" action="{{ url_for('add_type') }}">
-      <input type="text" name="name" placeholder="New type" required class="input"/>
+      <input
+        type="text"
+        name="name"
+        placeholder="New type"
+        required
+        class="input"
+      />
       <button class="btn btn-primary">
         <span class="material-icons">add</span> Add Type
       </button>
     </form>
   </div>
 
-  <table class="data-table">
+  <table id="types-table" class="data-table">
     <thead>
-      <tr><th>Name</th><th style="width:160px">Actions</th></tr>
+      <tr>
+        <th>Name</th>
+        <th style="width:160px">Actions</th>
+      </tr>
     </thead>
     <tbody>
       {% for t in types %}
       <tr data-type-id="{{ t.id }}">
         <td class="name-cell">{{ t.name }}</td>
         <td class="action-cell">
-          <button class="btn btn-secondary edit-btn"><span class="material-icons">edit</span></button>
-          <button class="btn btn-secondary delete-btn"><span class="material-icons">delete</span></button>
+          <button class="btn btn-secondary edit-btn" title="Edit">
+            <span class="material-icons">edit</span>
+          </button>
+          <button class="btn btn-secondary delete-btn" title="Delete">
+            <span class="material-icons">delete</span>
+          </button>
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="2"><em>No types yet.</em></td></tr>
+      <tr>
+        <td colspan="2"><em>No types yet.</em></td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>

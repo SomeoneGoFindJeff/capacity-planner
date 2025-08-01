@@ -4,28 +4,43 @@
   <div class="section-header">
     <h1>Resource Groups</h1>
     <form class="inline-form" method="post" action="{{ url_for('add_group') }}">
-      <input type="text" name="name" placeholder="New group" required class="input"/>
+      <input
+        type="text"
+        name="name"
+        placeholder="New group"
+        required
+        class="input"
+      />
       <button class="btn btn-primary">
         <span class="material-icons">add</span> Add Group
       </button>
     </form>
   </div>
 
-  <table class="data-table">
+  <table id="groups-table" class="data-table">
     <thead>
-      <tr><th>Name</th><th style="width:160px">Actions</th></tr>
+      <tr>
+        <th>Name</th>
+        <th style="width:160px">Actions</th>
+      </tr>
     </thead>
     <tbody>
       {% for g in groups %}
       <tr data-group-id="{{ g.id }}">
         <td class="name-cell">{{ g.name }}</td>
         <td class="action-cell">
-          <button class="btn btn-secondary edit-btn"><span class="material-icons">edit</span></button>
-          <button class="btn btn-secondary delete-btn"><span class="material-icons">delete</span></button>
+          <button class="btn btn-secondary edit-btn" title="Edit">
+            <span class="material-icons">edit</span>
+          </button>
+          <button class="btn btn-secondary delete-btn" title="Delete">
+            <span class="material-icons">delete</span>
+          </button>
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="2"><em>No groups yet.</em></td></tr>
+      <tr>
+        <td colspan="2"><em>No groups yet.</em></td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>

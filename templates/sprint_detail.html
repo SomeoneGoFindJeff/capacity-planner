@@ -82,7 +82,7 @@
           </li>
         {% endfor %}
         {% if not shown %}
-          <li><em>None left to assign.</em></li>
+          <li class="no-available"><em>None left to assign.</em></li>
         {% endif %}
       </ul>
     </section>
@@ -123,7 +123,7 @@
             </form>
           </h4>
 
-          <ul>
+          <ul class="assignment-list">
             {% if proj.assignments %}
               {% for a in proj.assignments %}
                 <li>
@@ -144,7 +144,7 @@
                 </li>
               {% endfor %}
             {% else %}
-              <li><em>No resources assigned.</em></li>
+              <li class="no-assigned"><em>No resources assigned.</em></li>
             {% endif %}
           </ul>
         </div>
