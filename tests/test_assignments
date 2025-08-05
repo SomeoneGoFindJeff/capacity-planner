@@ -1,0 +1,58 @@
+# tests/test_assignment.py
+import pytest
+from app import db, Sprint, Project, Resource, Assignment
+
+def test_assign_resource_to_project(client, app):
+    """
+    End-to-end test for the `/assign` endpoint:
+      1. Create a Resource ("Alice")
+      2. Create a Sprint ("Sprint1")
+      3. Create a Project ("Project1") inside that Sprint
+      4. Call POST /assign with JSON payload
+      5. Verify HTTP success and that an Assignment row exists with correct capacity
+    """
+
+    # 1. Create a resource
+    resp = client.post('/resources', data={'name': 'Alice'})
+    assert resp.status_code == 302
+
+    # 2. Create a sprint
+    resp = client.post('/sprints', data={'name': 'Sprint1'})
+    assert resp.status_code == 302
+
+    # Fetch the newly created sprint inside the app context
+    with app.app_context():
+        sprint = Sprint.query.first()
+        assert sprint is not None
+
+    # 3. Create a project in that sprint
+    resp = client.post(f'/sprints/{sprint.id}/projects', data={'name': 'Project1'})
+    assert resp.status_code == 302
+
+    # Fetch the project and resource
+    with app.app_context():
+        project = Project.query.filter_by(name='Project1', sprint_id=sprint.id).first()
+        resource = Resource.query.filter_by(name='Alice').first()
+        assert project is not None
+        assert resource is not None
+
+    # 4. Assign the resource to the project via the JSON API
+    resp = client.post('/assign', json={
+        'sprint_id': sprint.id,
+        'project_id': project.id,
+        'resource_id': resource.id,
+        'capacity': 75
+    })
+    assert resp.status_code == 200
+    payload = resp.get_json()
+    assert payload.get('success') is True
+
+    # 5. Verify in the database that the Assignment exists
+    with app.app_context():
+        assign = Assignment.query.filter_by(
+            sprint_id=sprint.id,
+            project_id=project.id,
+            resource_id=resource.id
+        ).first()
+        assert assign is not None
+        assert assign.capacity == 75
